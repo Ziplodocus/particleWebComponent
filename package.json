@@ -1,0 +1,24 @@
+{
+  "name": "particlecanvas",
+  "version": "1.0.0",
+  "description": "A flexible and customizable web component displaying simulated particles floating around",
+  "main": "dist/particleCanvas.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview",
+    "test": "console.log(undefined)"
+  },
+  "keywords": [
+    "particle",
+    "web",
+    "component",
+    "simulation",
+    "physics"
+  ],
+  "author": "Ziplodocus",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^2.7.2"
+  }
+}
