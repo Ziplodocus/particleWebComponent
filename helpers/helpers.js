@@ -1,4 +1,4 @@
-import { Vector2d as Vtr } from "../classes/Vector2d";
+import { Vector2d as Vtr } from "../utility-classes/Vector2d";
 
 const pi = Math.PI;
 const randomAngle = () => 2 * pi * Math.random()

@@ -15,7 +15,12 @@ export default defineConfig( ( { command, node } ) => {
     return {
       mode: 'production',
       build: {
-        sourcemap: true
+        sourcemap: true,
+        rollupOptions: {
+          output: {
+            entryFileNames: `particalCanvas.js`
+          }
+        }
       }
     }
   }
