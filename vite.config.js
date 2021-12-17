@@ -18,7 +18,14 @@ export default defineConfig( ( { command, node } ) => {
         sourcemap: true,
         rollupOptions: {
           output: {
-            entryFileNames: `particalCanvas.js`
+            entryFileNames: `particleCanvas.js`,
+            generatedCode: {
+              preset: "es2015",
+              arrowFunctions: true,
+              constBindings: true,
+              objectShorthand: true
+            },
+            validate: true
           }
         }
       }
