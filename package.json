@@ -1,9 +1,10 @@
 {
-  "name": "particlecanvas",
+  "name": "particle-web-component",
   "version": "1.0.0",
   "description": "A flexible and customizable web component displaying simulated particles floating around",
-  "main": "dist/particleCanvas.js",
+  "main": "classes/ParticleCanvas.js",
   "type": "module",
+  "module": "classes/ParticleCanvas.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,14 +13,11 @@
   },
   "keywords": [
     "particle",
-    "web",
-    "component",
+    "web-component",
+    "module",
     "simulation",
     "physics"
   ],
-  "author": "Ziplodocus",
-  "license": "ISC",
-  "devDependencies": {
-    "vite": "^2.7.2"
-  }
+  "author": "Harry Holehouse-Eyre <haroldholehouse@gmail.com>",
+  "license": "ISC"
 }
