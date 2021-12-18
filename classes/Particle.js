@@ -1,6 +1,6 @@
-import { Color } from '../utility-classes/Color';
-import { pi, randomAngleVtr } from '../helpers/helpers';
-import { EventEmitter } from '../utility-classes/EventEmitter';
+import { Color } from '../utility-classes/Color.js';
+import { pi, randomAngleVtr } from '../helpers/helpers.js';
+import { EventEmitter } from '../utility-classes/EventEmitter.js';
 
 export class Particle extends EventEmitter {
 	constructor( position, speed, radius ) {

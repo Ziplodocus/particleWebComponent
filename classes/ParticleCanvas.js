@@ -1,7 +1,7 @@
-import { ParticleManager } from './ParticleManager';
-import { pi } from '../helpers/helpers';
-import { Color } from '../utility-classes/Color';
-import { Vector2d } from '../utility-classes/Vector2d';
+import { ParticleManager } from './ParticleManager.js';
+import { pi } from '../helpers/helpers.js';
+import { Color } from '../utility-classes/Color.js';
+import { Vector2d } from '../utility-classes/Vector2d.js';
 
 //Getting the size of the this and assigning it to an object
 export class ParticleCanvas extends HTMLCanvasElement {

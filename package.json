@@ -6,10 +6,11 @@
   "type": "module",
   "module": "classes/ParticleCanvas.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "vite preview",
     "test": "console.log(undefined)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ziplodocus/particleWebComponent"
   },
   "keywords": [
     "particle",
@@ -19,5 +20,9 @@
     "physics"
   ],
   "author": "Harry Holehouse-Eyre <haroldholehouse@gmail.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ziplodocus/particleWebComponent/issues"
+  },
+  "homepage": "https://github.com/Ziplodocus/particleWebComponent#readme"
 }

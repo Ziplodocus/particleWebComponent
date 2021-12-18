@@ -1,6 +1,6 @@
 import { Particle } from "./Particle.js";
-import { EventEmitter } from "../utility-classes/EventEmitter";
-import { Vector2d } from "../utility-classes/Vector2d";
+import { EventEmitter } from "../utility-classes/EventEmitter.js";
+import { Vector2d } from "../utility-classes/Vector2d.js";
 
 export class ParticleManager extends EventEmitter {
   constructor( options, width, height ) {
