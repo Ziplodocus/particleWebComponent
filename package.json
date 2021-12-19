@@ -1,16 +1,19 @@
 {
-  "name": "particle-web-component",
+  "name": "@ziplodocus/particle-web-component",
   "version": "1.0.1",
   "description": "A flexible and customizable web component displaying simulated particles floating around",
   "main": "classes/ParticleCanvas.js",
   "type": "module",
   "module": "classes/ParticleCanvas.js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/ziplodocus"
+  },
   "scripts": {
     "test": "console.log(undefined)"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ziplodocus/particleWebComponent"
+    "url": "https://github.com/Ziplodocus/particleWebComponent"
   },
   "keywords": [
     "particle",
