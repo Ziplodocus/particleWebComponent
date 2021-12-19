@@ -19,45 +19,46 @@ The canvas can resize and the contents will adjust appropriately.
 
 There are two additional data attributes that take string encoded JSON. These override the default options for rendering and particle behaviour:
 
-I would hope that the ptions are self explanatory for the most part, or after a little experimentation.
-``
-data-canvas-options={\
-  fill: boolean,\
-  outline: boolean,\
-  edges: boolean,\
-  mouseEdges: boolean,\
-  fillColor: css valid color value,\
-  outlineColor: css valid color value,\
-  fillOpacity: 0-1 (float),\
-  edgeOpacity: 0-1 (float),\
-  pixelDensity: (int),\
-}\
-``
+I would hope that the options are self explanatory for the most part, or after a little experimentation.
+All the current options and their types are below:
+```
+data-canvas-options="{
+  fill: boolean,
+  outline: boolean,
+  edges: boolean,
+  mouseEdges: boolean,
+  fillColor: css valid color value,
+  outlineColor: css valid color value,
+  fillOpacity: 0-1 (float),
+  edgeOpacity: 0-1 (float),
+  pixelDensity: (int),
+}"
+```
 
-``
-data-particle-options {\
-  minSpeed: (float),\
-  maxSpeed: (float),\
-  minRadius: (float),\
-  maxRadius: (float),\
-  InitialParticles: (int),\
-  vicinity: (float)\
-}\
-``
+```
+data-particle-options="{
+  minSpeed: (float),
+  maxSpeed: (float),
+  minRadius: (float),
+  maxRadius: (float),
+  InitialParticles: (int),
+  vicinity: (float)
+}"
+```
 
 For example to create a a canvas with nothing but 25 blue bubbles floating around slowly the following could be used:
-``\
-<canvas is="particle-canvas"\
-  data-canvas-options="{\
-    fill: false,\
-    outline: true,\
-    outlineColor: blue,\
-    edges: false,\
-    mouseEdges: false\
-  }"\
-  data-particle-options="{\
-    initialParticles: 25,\
-    minSpeed: 0.3,\
-    maxSpeed: 0.6\
-  }"></canvas>\
-``
+```
+<canvas is="particle-canvas"
+  data-canvas-options="{
+    fill: false,
+    outline: true,
+    outlineColor: blue,
+    edges: false,
+    mouseEdges: false
+  }"
+  data-particle-options="{
+    initialParticles: 25,
+    minSpeed: 0.3,
+    maxSpeed: 0.6
+  }"></canvas>
+```
