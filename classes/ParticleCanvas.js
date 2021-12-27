@@ -143,8 +143,8 @@ export class ParticleCanvas extends HTMLCanvasElement {
 		const opn = this.options;
 		const diff = p.position.minus( q.position );
 		const distance = diff.norm;
-		const alpha = opn.edgeOpacity - ( distance / ( this.particleManager.options.vicinity / opn.edgeOpacity ) );
 		const radii = p.radius + q.radius;
+		const alpha = opn.edgeOpacity - ( ( distance - radii ) / ( ( this.particleManager.options.vicinity - radii ) / opn.edgeOpacity ) );
 		switch ( true ) {
 			case ( opn.outlineColor !== undefined ):
 				ctx.strokeStyle = opn.outlineColor;
