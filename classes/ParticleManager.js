@@ -5,9 +5,9 @@ import { Vector2d } from "../utility-classes/Vector2d.js";
 const defaultParticleOptions = {
   minSpeed: 0.3,
   maxSpeed: 0.5,
-  minRadius: 5,
-  maxRadius: 10,
-  initialParticles: 20,
+  minRadius: 2,
+  maxRadius: 8,
+  initialParticles: 15,
   vicinity: 50
 }
 

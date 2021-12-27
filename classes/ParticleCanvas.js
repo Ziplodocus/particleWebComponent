@@ -4,7 +4,7 @@ import { Color } from '../utility-classes/Color.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 
 const defaultCanvasOptions = {
-	fillOpacity: 0.3,
+	fillOpacity: 0.5,
 	edgeOpacity: 1,
 	mouseEdges: true,
 	fill: true,
@@ -43,10 +43,10 @@ export class ParticleCanvas extends HTMLCanvasElement {
 		} )
 
 		const renderLoop = () => {
+			this.setUpParticleRendering();
 			this.particleManager.particles.forEach( p => {
 				this.particleManager.trigger( 'incrementTime', { details: p } )
 			} )
-			this.setUpParticleRendering();
 			this.particleManager.particles.forEach( p => {
 				this.renderParticle( p );
 			} )
@@ -147,7 +147,6 @@ export class ParticleCanvas extends HTMLCanvasElement {
 		const radii = p.radius + q.radius;
 		switch ( true ) {
 			case ( opn.outlineColor !== undefined ):
-
 				ctx.strokeStyle = opn.outlineColor;
 				break
 			case ( opn.outline ):
