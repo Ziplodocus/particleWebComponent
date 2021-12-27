@@ -3,32 +3,31 @@ import { pi } from '../helpers/helpers.js';
 import { Color } from '../utility-classes/Color.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 
+const defaultCanvasOptions = {
+	fillOpacity: 0.3,
+	edgeOpacity: 1,
+	mouseEdges: true,
+	fill: true,
+	fillColor: undefined,
+	outline: false,
+	outlineColor: undefined,
+	edges: true,
+	pixelDensity: 1.1
+}
+
 //Getting the size of the this and assigning it to an object
 export class ParticleCanvas extends HTMLCanvasElement {
 	constructor() {
 		super()
-		// set up defaults all of them!!!
-		const defaultOptions = {
-			fillOpacity: 0.5,
-			edgeOpacity: 1,
-			mouseEdge: true,
-			fill: true,
-			fillColor: false,
-			outline: false,
-			outlineColor: false,
-			edges: true,
-			pixelDensity: 1
-		}
 		const canvasOptions = JSON.parse( this.getAttribute( 'data-canvas-options' ) )
 		const particleOptions = JSON.parse( this.getAttribute( 'data-particle-options' ) )
-		this.options = { ...defaultOptions, ...canvasOptions }
+		this.options = { ...defaultCanvasOptions, ...canvasOptions }
 		this.width = this.computedStyle( 'width' ).replace( 'px', '' ) * this.options.pixelDensity
 		this.height = this.computedStyle( 'height' ).replace( 'px', '' ) * this.options.pixelDensity
 		this.bounds = this.getBoundingClientRect()
 		this.ctx = this.getContext( '2d' )
-		this.ctx.lineCap = "round";
 		this.particleManager = new ParticleManager( particleOptions, this.width, this.height )
-		this.mousePosition = new Vector2d();
+		this.mousePosition = new Vector2d()
 
 		const sizeWatcher = new ResizeObserver( this.createResizeHandler() );
 		sizeWatcher.observe( this );
@@ -44,14 +43,14 @@ export class ParticleCanvas extends HTMLCanvasElement {
 		} )
 
 		const renderLoop = () => {
-			this.setUpParticleRendering();
 			this.particleManager.particles.forEach( p => {
 				this.particleManager.trigger( 'incrementTime', { details: p } )
 			} )
+			this.setUpParticleRendering();
 			this.particleManager.particles.forEach( p => {
 				this.renderParticle( p );
 			} )
-			this.renderMouseEdges();
+			if ( this.mousePosition[ "active" ] && this.options.mouseEdges ) this.renderMouseEdges();
 			requestAnimationFrame( renderLoop )
 		}
 		renderLoop()
@@ -113,53 +112,50 @@ export class ParticleCanvas extends HTMLCanvasElement {
 			} )
 			this.particleManager.bounds.x = this.width;
 			this.particleManager.bounds.y = this.height;
-
-			this.height = Math.floor( this.options.pixelDensity * this.height );
-			this.width = Math.floor( this.options.pixelDensity * this.width );
 		}
 	}
 	setUpParticleRendering() {
 		this.ctx.clearRect( 0, 0, this.width, this.height );
+		this.ctx.lineCap = 'round';
 	}
 	renderParticle( p ) {
 		const ctx = this.ctx;
 		const opn = this.options;
+		ctx.globalAlpha = opn.fillOpacity;
 		if ( opn.fill || opn.outline ) {
 			ctx.beginPath();
 			ctx.arc( p.x, p.y, p.radius, 0, 2 * pi );
 		}
 		if ( opn.fill ) {
-			ctx.fillStyle = opn.fillColor || p.color.rgba;
+			ctx.fillStyle = opn.fillColor ?? p.color.rgba;
 			ctx.fill();
 		}
 		if ( opn.outline ) {
-			ctx.strokeStyle = opn.outlineColor || p.lineColor.rgba;
+			ctx.strokeStyle = opn.strokeStyle ?? p.lineColor.rgba;
 			ctx.lineWidth = p.radius / 3;
 			ctx.stroke();
 		}
+		ctx.globalAlpha = 1;
 	}
 	//Draws edges between particles within a vicinity, and also to the tracked mouse position
 	renderEdge( p, q ) {
 		const ctx = this.ctx;
+		const opn = this.options;
 		const diff = p.position.minus( q.position );
 		const distance = diff.norm;
-		const alpha = this.options.edgeOpacity - ( distance / ( this.particleManager.options.vicinity / this.options.edgeOpacity ) );
+		const alpha = opn.edgeOpacity - ( distance / ( this.particleManager.options.vicinity / opn.edgeOpacity ) );
 		const radii = p.radius + q.radius;
-		let edgeColor = '';
 		switch ( true ) {
-			case ( this.options.outlineColor ):
-				edgeColor = this.options.outlineColor;
+			case ( opn.outlineColor !== undefined ):
+
+				ctx.strokeStyle = opn.outlineColor;
 				break
-			case ( this.options.outline ):
-				edgeColor = Color.avgColors( [ p.lineColor, q.lineColor ] ).rgba;
-				break
-			case ( this.options.fillColor ):
-				edgeColor = this.options.fillColor;
+			case ( opn.outline ):
+				ctx.strokeStyle = Color.avgColors( [ p.lineColor, q.lineColor ] ).rgba;
 				break
 			default:
-				edgeColor = Color.avgColors( [ p.color, q.color ] ).rgba;
+				ctx.strokeStyle = Color.avgColors( [ p.color, q.color ] ).rgba;
 		}
-		ctx.strokeStyle = edgeColor;
 		ctx.globalAlpha = alpha;
 		ctx.lineWidth = radii / 5;
 		ctx.beginPath();
@@ -169,27 +165,24 @@ export class ParticleCanvas extends HTMLCanvasElement {
 		ctx.globalAlpha = 1;
 	}
 	renderMouseEdges() {
-		if ( !this.mousePosition[ "active" ] ) return
 		this.particleManager.particles.forEach( p => {
 			const distance = p.position.minus( this.mousePosition ).norm;
 			if ( distance > this.particleManager.options.vicinity * 1.5 ) return;
 			const alpha = this.options.edgeOpacity - ( distance / ( ( this.particleManager.options.vicinity * 1.5 ) / this.options.edgeOpacity ) );
-			let edgeColor = '';
+			const ctx = this.ctx;
 			switch ( true ) {
-				case ( this.options.outlineColor ):
-					edgeColor = this.options.outlineColor;
+				case ( this.options.outlineColor !== undefined ):
+					ctx.strokeStyle = this.options.outlineColor;
 					break
 				case ( this.options.outline ):
-					edgeColor = p.lineColor.rgba;
+					ctx.strokeStyle = p.lineColor.rgba;
 					break
-				case ( this.options.fillColor ):
-					edgeColor = this.options.fillColor;
+				case ( this.options.fillColor !== undefined ):
+					ctx.strokeStyle = this.options.fillColor;
 					break
 				default:
-					edgeColor = p.color.rgba;
+					ctx.strokeStyle = p.color.rgba;
 			}
-			const ctx = this.ctx;
-			ctx.strokeStyle = edgeColor;
 			ctx.globalAlpha = alpha;
 			ctx.lineWidth = p.radius * 0.8;
 			ctx.beginPath();
