@@ -36,10 +36,10 @@ export class ParticleManager extends EventEmitter {
     this.on('incrementTime', this.incrementTime)
   }
   incrementTime = (e: ZEvent) => {
-    const p = e.details;
+    const p: Particle = e.details;
+    p.move();
     this.checkParticleVicinity(p);
     this.checkForBoundsCollision(p);
-    p.trigger('move');
   }
   checkForBoundsCollision(p: Particle) {
     const isLeft = p.x - p.radius <= 0;

@@ -14,9 +14,9 @@ export class ParticleManager extends EventEmitter {
         super();
         this.incrementTime = (e) => {
             const p = e.details;
+            p.move();
             this.checkParticleVicinity(p);
             this.checkForBoundsCollision(p);
-            p.trigger('move');
         };
         this.particles = [];
         this.options = Object.assign(Object.assign({}, defaultParticleOptions), options);

@@ -11,7 +11,7 @@ const defaultCanvasOptions = {
     outline: false,
     outlineColor: undefined,
     edges: true,
-    pixelDensity: 1.1
+    pixelDensity: 1
 };
 //Getting the size of the this and assigning it to an object
 export class ParticleCanvas extends HTMLCanvasElement {
@@ -50,9 +50,8 @@ export class ParticleCanvas extends HTMLCanvasElement {
         const canvasOptions = JSON.parse(this.getAttribute('data-canvas-options'));
         const particleOptions = JSON.parse(this.getAttribute('data-particle-options'));
         this.options = Object.assign(Object.assign({}, defaultCanvasOptions), canvasOptions);
-        this.width = parseInt(this.computedStyle('width').replace('px', '')) * this.options.pixelDensity;
-        this.height = parseInt(this.computedStyle('height').replace('px', '')) * this.options.pixelDensity;
-        this.bounds = this.getBoundingClientRect();
+        this.width = this.scrollWidth * this.options.pixelDensity;
+        this.height = this.scrollHeight * this.options.pixelDensity;
         this.ctx = this.getContext('2d');
         this.particleManager = new ParticleManager(particleOptions, this.width, this.height);
         this.mousePosition = new Vector2d();
@@ -93,9 +92,8 @@ export class ParticleCanvas extends HTMLCanvasElement {
         };
     }
     refresh() {
-        this.width = parseInt(this.computedStyle('width').replace('px', '')) * this.options.pixelDensity;
-        this.height = parseInt(this.computedStyle('height').replace('px', '')) * this.options.pixelDensity;
-        this.bounds = this.getBoundingClientRect();
+        this.width = this.scrollWidth * this.options.pixelDensity;
+        this.height = this.scrollHeight * this.options.pixelDensity;
     }
     setUpParticleRendering() {
         this.ctx.clearRect(0, 0, this.width, this.height);
