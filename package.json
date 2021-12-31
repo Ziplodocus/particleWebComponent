@@ -1,6 +1,6 @@
 {
   "name": "particle-web-component",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A flexible and customizable web component displaying simulated particles floating around",
   "main": "classes/ParticleCanvas.js",
   "type": "module",
