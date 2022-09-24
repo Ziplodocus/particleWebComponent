@@ -17,6 +17,10 @@ const defaultCanvasOptions = {
 export class ParticleCanvas extends HTMLCanvasElement {
     constructor() {
         super();
+        this.renderLoop = () => {
+            this.loopBody();
+            requestAnimationFrame(this.renderLoop);
+        };
         this.hoverHandler = (e) => {
             requestAnimationFrame(() => {
                 const mod = this.options.pixelDensity;
@@ -40,7 +44,7 @@ export class ParticleCanvas extends HTMLCanvasElement {
             const oldCanvasSize = { width: this.width, height: this.height, area: this.area };
             this.refresh();
             const sizeRatio = this.area / oldCanvasSize.area;
-            this.particleManager.options.vicinity *= Math.pow(sizeRatio, 0.5);
+            this.particleManager.options.vicinity *= sizeRatio ** 0.5;
             this.particleManager.particles.forEach(p => {
                 p.position.set(p.x * (this.width / oldCanvasSize.width), p.y * (this.height / oldCanvasSize.height));
             });
@@ -49,7 +53,7 @@ export class ParticleCanvas extends HTMLCanvasElement {
         };
         const canvasOptions = JSON.parse(this.getAttribute('data-canvas-options'));
         const particleOptions = JSON.parse(this.getAttribute('data-particle-options'));
-        this.options = Object.assign(Object.assign({}, defaultCanvasOptions), canvasOptions);
+        this.options = { ...defaultCanvasOptions, ...canvasOptions };
         this.width = this.scrollWidth * this.options.pixelDensity;
         this.height = this.scrollHeight * this.options.pixelDensity;
         this.ctx = this.getContext('2d');
@@ -63,22 +67,19 @@ export class ParticleCanvas extends HTMLCanvasElement {
         this.addEventListener('mouseleave', this.mouseLeaveHandler);
         this.addEventListener('click', this.mouseClickHandler);
         this.particleManager.on('inVicinity', this.inVicinityHandler);
-        const renderLoop = () => {
-            this.setUpParticleRendering();
-            this.particleManager.particles.forEach(p => {
-                this.particleManager.trigger('incrementTime', { details: p });
-            });
-            this.particleManager.particles.forEach(p => {
-                this.renderParticle(p);
-            });
-            if (this.mousePosition["active"] && this.options.mouseEdges)
-                this.renderMouseEdges();
-            requestAnimationFrame(renderLoop);
-        };
-        renderLoop();
+        this.renderLoop();
     }
     get area() {
         return this.width * this.height;
+    }
+    loopBody() {
+        this.setUpParticleRendering();
+        this.particleManager.trigger('incrementTime');
+        this.particleManager.particles.forEach(p => {
+            this.renderParticle(p);
+        });
+        if (this.mousePosition["active"] && this.options.mouseEdges)
+            this.renderMouseEdges();
     }
     createResizeHandler() {
         let resizeId;
@@ -100,7 +101,6 @@ export class ParticleCanvas extends HTMLCanvasElement {
         this.ctx.lineCap = 'round';
     }
     renderParticle(p) {
-        var _a, _b;
         const ctx = this.ctx;
         const opn = this.options;
         ctx.globalAlpha = opn.fillOpacity;
@@ -109,11 +109,11 @@ export class ParticleCanvas extends HTMLCanvasElement {
             ctx.arc(p.x, p.y, p.radius, 0, 2 * pi);
         }
         if (opn.fill) {
-            ctx.fillStyle = (_a = opn.fillColor) !== null && _a !== void 0 ? _a : p.color.rgba;
+            ctx.fillStyle = opn.fillColor ?? p.color.rgba;
             ctx.fill();
         }
         if (opn.outline) {
-            ctx.strokeStyle = (_b = opn.outlineColor) !== null && _b !== void 0 ? _b : p.lineColor.rgba;
+            ctx.strokeStyle = opn.outlineColor ?? p.lineColor.rgba;
             ctx.lineWidth = p.radius / 3;
             ctx.stroke();
         }

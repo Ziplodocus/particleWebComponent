@@ -12,15 +12,34 @@ const defaultParticleOptions = {
 export class ParticleManager extends EventEmitter {
     constructor(options, width, height) {
         super();
-        this.incrementTime = (e) => {
-            const p = e.details;
-            p.move();
-            this.checkParticleVicinity(p);
-            this.checkForBoundsCollision(p);
+        this.incrementTime = () => {
+            this.particles.forEach((p) => {
+                p.move();
+                const coords = this.pBox(p);
+                if (coords !== p.box) {
+                    let box = this.pMap.get(p.box);
+                    box.delete(p);
+                    box = this.pMap.get(coords);
+                    p.box = coords;
+                    if (box === undefined) {
+                        this.pMap.set(coords, new Set([p]));
+                    }
+                    else {
+                        box.add(p);
+                    }
+                }
+                this.checkParticleVicinity(p);
+                this.checkForBoundsCollision(p);
+            });
+            this.checked.clear();
         };
-        this.particles = [];
-        this.options = Object.assign(Object.assign({}, defaultParticleOptions), options);
+        this.particles = new Set();
+        this.options = { ...defaultParticleOptions, ...options };
         this.bounds = { x: width, y: height };
+        this.pMap = new Map();
+        this.boxSize = Math.ceil(Math.max(2 * this.options.minRadius, this.options.vicinity));
+        this.checked = new Set();
+        this.nearParticles = new Set();
         for (let i = this.options.initialParticles; i > 0; i--) {
             this.add();
         }
@@ -45,9 +64,26 @@ export class ParticleManager extends EventEmitter {
         }
     }
     checkParticleVicinity(p) {
-        let i = this.particles.indexOf(p);
-        this.particles.slice(i).forEach(q => {
-            if (p == q)
+        const [w, l] = JSON.parse(this.pBox(p));
+        /*
+        Determine which particles are close enough to interact
+        with and add them to a set
+        */
+        this.nearParticles = new Set();
+        for (let i = w - 1; i <= w + 1; i++) {
+            for (let j = l - 1; j <= l + 1; j++) {
+                const part = this.pMap.get(`[${i}, ${j}]`) || [];
+                this.nearParticles = new Set([...this.nearParticles, ...part]);
+            }
+        }
+        /*
+        Check vicinity only for particles in neighbouring boxes
+        */
+        this.nearParticles.forEach((q) => {
+            // If the
+            if (this.checked.has(q.id))
+                return;
+            if (p === q)
                 return;
             //calcing values
             const perp = p.position.minus(q.position);
@@ -92,6 +128,7 @@ export class ParticleManager extends EventEmitter {
                 //Setting the new velocities on the particles
                 p.trigger('collision', { v: pv });
                 q.trigger('collision', { v: qv });
+                // Shifts particles to the point of minimal( not zero! ) contact if they are overlapped
                 function handleOverlap() {
                     const diff = radii - distance;
                     const ratio = p.radius / radii;
@@ -101,8 +138,8 @@ export class ParticleManager extends EventEmitter {
                     q.position.adjust(qadj);
                 }
             }
-            // Shifts particles to the point of minimal( not zero! ) contact if they are overlapped
         });
+        this.checked.add(p.id);
     }
     randomPosition() {
         const randX = Math.random() * (this.bounds.x - 2 * this.options.maxRadius) + this.options.maxRadius;
@@ -115,8 +152,24 @@ export class ParticleManager extends EventEmitter {
     }
     add(pos = this.randomPosition()) {
         const speed = this.randomSpeed();
-        const radius = this.options.minRadius + (this.options.maxRadius - this.options.minRadius) * ((speed - this.options.minSpeed) / (this.options.maxSpeed - this.options.minSpeed + 0.000001));
-        this.particles.push(new Particle(pos, speed, radius));
+        const radius = this.options.minRadius
+            + (this.options.maxRadius - this.options.minRadius)
+                * ((speed - this.options.minSpeed)
+                    / (this.options.maxSpeed - this.options.minSpeed + 0.000001));
+        const p = new Particle(pos, speed, radius, this.particles.size);
+        this.particles.add(p);
+        const coords = this.pBox(p);
+        p.box = coords;
+        let box = this.pMap.get(coords);
+        if (box === undefined) {
+            this.pMap.set(coords, new Set([p]));
+        }
+        else {
+            box.add(p);
+        }
+    }
+    pBox(p) {
+        return `[${Math.floor(p.x / this.boxSize)}, ${Math.floor(p.y / this.boxSize)}]`;
     }
 }
 //# sourceMappingURL=ParticleManager.js.map

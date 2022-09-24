@@ -7,6 +7,6 @@ export declare class EventEmitter {
     };
     constructor();
     on(name: string, callback: Function): void;
-    trigger(name: string, event: ZEvent): void;
+    trigger(name: string, event?: ZEvent): void;
     off(name: string, callback: Function): void;
 }

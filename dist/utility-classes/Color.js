@@ -11,7 +11,7 @@ export class Color {
         const vals = { r: 0, g: 0, b: 0 };
         colorArr.forEach(color => {
             for (let val in vals) {
-                vals[val] += Math.pow(color[val], 2);
+                vals[val] += color[val] ** 2;
             }
         });
         for (let val in vals) {

@@ -1,6 +1,7 @@
 import { Particle } from "./Particle.js";
 import { EventEmitter, ZEvent } from "../utility-classes/EventEmitter.js";
 import { Vector2d } from "../utility-classes/Vector2d.js";
+import { t, ts, tc } from "../helpers/helpers.js";
 
 export type ParticleManagerOptions = {
   minSpeed: number,
@@ -8,8 +9,8 @@ export type ParticleManagerOptions = {
   minRadius: number,
   maxRadius: number,
   initialParticles: number,
-  vicinity: number
-}
+  vicinity: number;
+};
 const defaultParticleOptions: ParticleManagerOptions = {
   minSpeed: 0.3,
   maxSpeed: 0.5,
@@ -17,30 +18,56 @@ const defaultParticleOptions: ParticleManagerOptions = {
   maxRadius: 8,
   initialParticles: 15,
   vicinity: 50
-}
+};
 
 export class ParticleManager extends EventEmitter {
-  particles: Particle[]
-  options: ParticleManagerOptions
-  bounds: { x: number, y: number }
+  particles: Set<Particle>;
+  options: ParticleManagerOptions;
+  bounds: { x: number, y: number; };
+  pMap: Map<string, Set<Particle>>;
+  boxSize: number;
+  checked: Set<number>;
+  nearParticles: Set<Particle>;
   constructor(options: ParticleManagerOptions, width: number, height: number) {
-    super()
-    this.particles = []
-    this.options = { ...defaultParticleOptions, ...options }
-    this.bounds = { x: width, y: height }
+    super();
+    this.particles = new Set();
+    this.options = { ...defaultParticleOptions, ...options };
+    this.bounds = { x: width, y: height };
+    this.pMap = new Map();
+    this.boxSize = Math.ceil(Math.max(2 * this.options.minRadius, this.options.vicinity));
+    this.checked = new Set();
+    this.nearParticles = new Set();
 
     for (let i = this.options.initialParticles; i > 0; i--) {
       this.add();
     }
 
-    this.on('incrementTime', this.incrementTime)
+    this.on('incrementTime', this.incrementTime);
   }
-  incrementTime = (e: ZEvent) => {
-    const p: Particle = e.details;
-    p.move();
-    this.checkParticleVicinity(p);
-    this.checkForBoundsCollision(p);
-  }
+  incrementTime = () => {
+    this.particles.forEach((p) => {
+      p.move();
+
+      const coords = this.pBox(p);
+      if (coords !== p.box) {
+        let box = this.pMap.get(p.box);
+        box.delete(p);
+        box = this.pMap.get(coords);
+        p.box = coords;
+
+        if (box === undefined) {
+          this.pMap.set(coords, new Set([p]));
+        } else {
+          box.add(p);
+        }
+      }
+
+      this.checkParticleVicinity(p);
+      this.checkForBoundsCollision(p);
+
+    });
+    this.checked.clear();
+  };
   checkForBoundsCollision(p: Particle) {
     const isLeft = p.x - p.radius <= 0;
     const isRight = p.x + p.radius >= this.bounds.x;
@@ -50,27 +77,45 @@ export class ParticleManager extends EventEmitter {
       p.trigger('boundsCollide', {
         direction: 'horizontal',
         adj: isLeft ? p.radius - p.x : this.bounds.x - p.x - p.radius
-      })
+      });
     }
     if (isUnder || isOver) {
       p.trigger('boundsCollide', {
         direction: 'vertical',
         adj: isOver ? p.radius - p.y : this.bounds.y - p.y - p.radius
-      })
+      });
     }
   }
   checkParticleVicinity(p: Particle) {
-    let i = this.particles.indexOf(p);
-    this.particles.slice(i).forEach(q => {
-      if (p == q) return;
+    const [w, l]: [number, number] = JSON.parse(this.pBox(p));
+
+    /*
+    Determine which particles are close enough to interact
+    with and add them to a set
+    */
+    this.nearParticles = new Set();
+    for (let i = w - 1; i <= w + 1; i++) {
+      for (let j = l - 1; j <= l + 1; j++) {
+        const part = this.pMap.get(`[${i}, ${j}]`) || [];
+        this.nearParticles = new Set([...this.nearParticles, ...part]);
+      }
+    }
+
+    /*
+    Check vicinity only for particles in neighbouring boxes
+    */
+    this.nearParticles.forEach((q) => {
+      // If the
+      if (this.checked.has(q.id)) return;
+      if (p === q) return;
       //calcing values
       const perp = p.position.minus(q.position);
       const distance = perp.norm;
       const radii = p.radius + q.radius;
-      const isInVicinity = (distance <= this.options.vicinity)
+      const isInVicinity = (distance <= this.options.vicinity);
       if (isInVicinity) {
-        this.trigger('inVicinity', { p, q })
-      } else if (this.options.vicinity > radii) return
+        this.trigger('inVicinity', { p, q });
+      } else if (this.options.vicinity > radii) return;
 
       const isCollision = (distance <= radii);
       //Handles if this particle collides with another, redirecting both
@@ -86,9 +131,9 @@ export class ParticleManager extends EventEmitter {
         const uqt = q.velocity.dot(tangunit);
 
         /*
-        New velocity in the direction of the perpendicular 
+        New velocity in the direction of the perpendicular
         The velocity tangent to the point of collision does not change,
-        but the perpendicular does, hence turning the 2dimensional problem 
+        but the perpendicular does, hence turning the 2dimensional problem
         into a 1dimensional, (1 dimensional collision equation)
         */
         const totalMass = p.mass + q.mass;
@@ -108,6 +153,7 @@ export class ParticleManager extends EventEmitter {
         p.trigger('collision', { v: pv });
         q.trigger('collision', { v: qv });
 
+        // Shifts particles to the point of minimal( not zero! ) contact if they are overlapped
         function handleOverlap() {
           const diff = radii - distance;
           const ratio = p.radius / radii;
@@ -117,8 +163,8 @@ export class ParticleManager extends EventEmitter {
           q.position.adjust(qadj);
         }
       }
-      // Shifts particles to the point of minimal( not zero! ) contact if they are overlapped
-    })
+    });
+    this.checked.add(p.id);
   }
   randomPosition() {
     const randX = Math.random() * (this.bounds.x - 2 * this.options.maxRadius) + this.options.maxRadius;
@@ -131,7 +177,25 @@ export class ParticleManager extends EventEmitter {
   }
   add(pos = this.randomPosition()) {
     const speed = this.randomSpeed();
-    const radius = this.options.minRadius + (this.options.maxRadius - this.options.minRadius) * ((speed - this.options.minSpeed) / (this.options.maxSpeed - this.options.minSpeed + 0.000001))
-    this.particles.push(new Particle(pos, speed, radius));
+    const radius =
+      this.options.minRadius
+      + (this.options.maxRadius - this.options.minRadius)
+      * (
+        (speed - this.options.minSpeed)
+        / (this.options.maxSpeed - this.options.minSpeed + 0.000001)
+      );
+    const p = new Particle(pos, speed, radius, this.particles.size);
+    this.particles.add(p);
+    const coords = this.pBox(p);
+    p.box = coords;
+    let box = this.pMap.get(coords);
+    if (box === undefined) {
+      this.pMap.set(coords, new Set([p]));
+    } else {
+      box.add(p);
+    }
+  }
+  pBox(p: Particle): string {
+    return `[${Math.floor(p.x / this.boxSize)}, ${Math.floor(p.y / this.boxSize)}]`;
   }
 }

@@ -6,4 +6,18 @@ const randomAngleVtr = () => {
     return new Vector2d(Math.cos(directionRadeons), Math.sin(directionRadeons));
 };
 export { randomAngle, pi, randomAngleVtr };
+export const ts = (name) => {
+    total[name] = 0;
+};
+let total = {};
+export const t = (name) => {
+    let startTime = performance.mark(name).startTime;
+    return () => {
+        const endTime = performance.mark(name).startTime;
+        total[name] += endTime - startTime;
+    };
+};
+export const tc = (name) => {
+    console.log(name + ': ' + total[name]);
+};
 //# sourceMappingURL=helpers.js.map

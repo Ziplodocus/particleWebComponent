@@ -2,7 +2,7 @@ import { Color } from '../utility-classes/Color.js';
 import { pi, randomAngleVtr } from '../helpers/helpers.js';
 import { EventEmitter } from '../utility-classes/EventEmitter.js';
 export class Particle extends EventEmitter {
-    constructor(position, speed, radius) {
+    constructor(position, speed, radius, id) {
         super();
         this.move = () => {
             this.position.adjust(this.velocity);
@@ -20,12 +20,12 @@ export class Particle extends EventEmitter {
         this.handleCollision = (e) => {
             this.velocity = e.v;
         };
+        this.id = id;
         this.position = position;
         this.velocity = randomAngleVtr().mult(speed);
         this.color = new Color();
         this.lineColor = new Color();
         this.radius = radius;
-        this.on('move', this.move);
         this.on('boundsCollide', this.handleBoundCollision);
         this.on('collision', this.handleCollision);
     }
@@ -35,7 +35,7 @@ export class Particle extends EventEmitter {
     get vy() { return this.velocity.y; }
     get speed() { return this.velocity.norm; }
     get direction() { return Math.acos(this.vx / this.speed); }
-    get mass() { return 4 / 3 * pi * Math.pow(this.radius, 3); }
+    get mass() { return 4 / 3 * pi * this.radius ** 3; }
     set x(posX) { this.position.x = posX; }
     set y(posY) { this.position.y = posY; }
     set vx(velX) { this.velocity.x = velX; }

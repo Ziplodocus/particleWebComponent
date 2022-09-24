@@ -11,3 +11,18 @@ const randomAngleVtr = (): Vector2d => {
 }
 
 export { randomAngle, pi, randomAngleVtr }
+
+export const ts = (name:string) => {
+  total[name] = 0;
+}
+let total : Record<string, number> = {};
+export const t = (name : string) => {
+  let startTime = performance.mark(name).startTime;
+  return () => {
+    const endTime = performance.mark(name).startTime;
+    total[name] += endTime - startTime;
+  }
+}
+export const tc = (name :string) => {
+  console.log(name + ': ' + total[name]);
+}

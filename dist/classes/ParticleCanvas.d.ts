@@ -22,6 +22,8 @@ export declare class ParticleCanvas extends HTMLCanvasElement {
     mousePosition: Vector2d;
     constructor();
     get area(): number;
+    renderLoop: () => void;
+    loopBody(): void;
     createResizeHandler(): (entries: ResizeObserverEntry[]) => void;
     hoverHandler: (e: MouseEvent) => void;
     mouseClickHandler: (e: MouseEvent) => void;

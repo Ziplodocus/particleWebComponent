@@ -13,7 +13,7 @@ export class EventEmitter {
     if (!callbacks) this.events[name] = [callback];
     else callbacks.push(callback);
   }
-  trigger(name: string, event: ZEvent): void {
+  trigger(name: string, event?: ZEvent): void {
     const callbacks = this.events[name];
     if (callbacks) callbacks.forEach(callback => callback(event));
   }

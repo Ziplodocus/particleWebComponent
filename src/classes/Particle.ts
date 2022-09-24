@@ -4,20 +4,22 @@ import { EventEmitter, ZEvent } from '../utility-classes/EventEmitter.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 
 export class Particle extends EventEmitter {
+	id : number
+	box ?: string
 	position: Vector2d
 	velocity: Vector2d
 	color: Color
 	lineColor: Color
 	radius: number
-	constructor(position: Vector2d, speed: number, radius: number) {
+	constructor(position: Vector2d, speed: number, radius: number, id: number) {
 		super();
+		this.id = id;
 		this.position = position;
 		this.velocity = randomAngleVtr().mult(speed);
 		this.color = new Color();
 		this.lineColor = new Color();
 		this.radius = radius;
 
-		this.on('move', this.move)
 		this.on('boundsCollide', this.handleBoundCollision)
 		this.on('collision', this.handleCollision)
 	}

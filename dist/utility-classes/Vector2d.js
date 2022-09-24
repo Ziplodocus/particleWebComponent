@@ -4,7 +4,7 @@ export class Vector2d {
         this.y = y;
     }
     get norm() {
-        return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+        return (this.x ** 2 + this.y ** 2) ** 0.5;
     }
     copy() {
         return new Vector2d(this.x, this.y);

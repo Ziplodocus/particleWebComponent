@@ -1,16 +1,16 @@
 
 export class Vector2d {
-  x: number
-  y: number
+  x: number;
+  y: number;
   constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
   }
   get norm(): number {
-    return Math.sqrt(this.x ** 2 + this.y ** 2)
+    return (this.x ** 2 + this.y ** 2) ** 0.5;
   }
   copy(): Vector2d {
-    return new Vector2d(this.x, this.y)
+    return new Vector2d(this.x, this.y);
   }
   set(x: number, y: number): void {
     this.x = x;
@@ -25,7 +25,7 @@ export class Vector2d {
     this.y += vtr.y;
   }
   perp(): Vector2d {
-    return new Vector2d(-this.y, this.x)
+    return new Vector2d(-this.y, this.x);
   }
   mult(scalar: number): Vector2d {
     return new Vector2d(this.x * scalar, this.y * scalar);
@@ -34,7 +34,7 @@ export class Vector2d {
     return this.x * a.x + this.y * a.y;
   }
   add(vtr: Vector2d): Vector2d {
-    return new Vector2d(this.x + vtr.x, this.y + vtr.y)
+    return new Vector2d(this.x + vtr.x, this.y + vtr.y);
   }
   minus(vtr: Vector2d): Vector2d {
     return this.add(vtr.mult(-1));
