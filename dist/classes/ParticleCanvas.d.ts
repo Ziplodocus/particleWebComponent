@@ -3,29 +3,29 @@ import { Vector2d } from '../utility-classes/Vector2d.js';
 import { ZEvent } from '../utility-classes/EventEmitter.js';
 import { Particle } from './Particle.js';
 type ParticleCanvasOptions = {
-    fillOpacity: number;
-    edgeOpacity: number;
-    mouseEdges: boolean;
     fill: boolean;
     fillColor: string;
+    fillOpacity: number;
     outline: boolean;
     edges: boolean;
+    edgeOpacity: number;
+    mouseEdges: boolean;
     pixelDensity: number;
 };
 declare const defaultOptions: {
-    readonly 'fill-opacity': 0.5;
-    readonly 'edge-opacity': 1;
-    readonly 'mouse-edges': true;
     readonly fill: true;
     readonly 'fill-color': "";
+    readonly 'fill-opacity': 0.75;
     readonly outline: false;
     readonly edges: true;
+    readonly 'edge-opacity': 0.8;
+    readonly 'mouse-edges': true;
     readonly 'pixel-density': 1;
     readonly 'min-speed': 0.1;
-    readonly 'max-speed': 0.3;
+    readonly 'max-speed': 0.8;
     readonly 'min-radius': 1;
-    readonly 'max-radius': 7;
-    readonly 'initial-number': 15;
+    readonly 'max-radius': 5;
+    readonly 'initial-number': 30;
     readonly vicinity: 75;
 };
 export declare class ParticleCanvas extends HTMLElement {

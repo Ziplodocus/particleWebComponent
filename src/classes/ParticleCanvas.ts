@@ -6,30 +6,30 @@ import { ZEvent } from '../utility-classes/EventEmitter.js';
 import { Particle } from './Particle.js';
 
 type ParticleCanvasOptions = {
-	fillOpacity: number,
-	edgeOpacity: number,
-	mouseEdges: boolean,
 	fill: boolean,
 	fillColor: string,
+	fillOpacity: number,
 	outline: boolean,
 	edges: boolean,
+	edgeOpacity: number,
+	mouseEdges: boolean,
 	pixelDensity: number;
 };
 
 const defaultOptions = {
-	'fill-opacity': 0.5,
-	'edge-opacity': 1,
-	'mouse-edges': true,
 	'fill': true,
 	'fill-color': '',
+	'fill-opacity': 0.75,
 	'outline': false,
 	'edges': true,
+	'edge-opacity': 0.8,
+	'mouse-edges': true,
 	'pixel-density': 1,
 	'min-speed': 0.1,
-	'max-speed': 0.3,
+	'max-speed': 0.8,
 	'min-radius': 1,
-	'max-radius': 7,
-	'initial-number': 15,
+	'max-radius': 5,
+	'initial-number': 30,
 	'vicinity': 75
 } as const;
 
@@ -294,7 +294,7 @@ export class ParticleCanvas extends HTMLElement {
 			(distance - radii) / ((this.manager.options.vicinity - radii) / this.options.edgeOpacity)
 		);
 
-		ctx.strokeStyle = Color.avgColors([p.color, q.color]).rgba;
+		ctx.strokeStyle = this.options.fillColor || Color.avgColors([p.color, q.color]).rgba;
 		ctx.globalAlpha = alpha;
 		ctx.lineWidth = radii / 5;
 		ctx.beginPath();

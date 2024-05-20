@@ -3,19 +3,19 @@ import { pi } from '../helpers/helpers.js';
 import { Color } from '../utility-classes/Color.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 const defaultOptions = {
-    'fill-opacity': 0.5,
-    'edge-opacity': 1,
-    'mouse-edges': true,
     'fill': true,
     'fill-color': '',
+    'fill-opacity': 0.75,
     'outline': false,
     'edges': true,
+    'edge-opacity': 0.8,
+    'mouse-edges': true,
     'pixel-density': 1,
     'min-speed': 0.1,
-    'max-speed': 0.3,
+    'max-speed': 0.8,
     'min-radius': 1,
-    'max-radius': 7,
-    'initial-number': 15,
+    'max-radius': 5,
+    'initial-number': 30,
     'vicinity': 75
 };
 //Getting the size of the this and assigning it to an object
@@ -206,7 +206,7 @@ export class ParticleCanvas extends HTMLElement {
         const distance = diff.norm;
         const radii = p.radius + q.radius;
         const alpha = this.options.edgeOpacity - ((distance - radii) / ((this.manager.options.vicinity - radii) / this.options.edgeOpacity));
-        ctx.strokeStyle = Color.avgColors([p.color, q.color]).rgba;
+        ctx.strokeStyle = this.options.fillColor || Color.avgColors([p.color, q.color]).rgba;
         ctx.globalAlpha = alpha;
         ctx.lineWidth = radii / 5;
         ctx.beginPath();
