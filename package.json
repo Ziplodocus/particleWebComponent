@@ -7,6 +7,7 @@
   "type": "module",
   "module": "./dist/classes/ParticleCanvas",
   "scripts": {
+    "dev": "tsc --watch",
     "test": "console.log(undefined)"
   },
   "repository": {
@@ -25,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/Ziplodocus/particleWebComponent/issues"
   },
-  "homepage": "https://github.com/Ziplodocus/particleWebComponent#readme"
+  "homepage": "https://github.com/Ziplodocus/particleWebComponent#readme",
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
 }

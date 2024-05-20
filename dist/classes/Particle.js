@@ -12,7 +12,7 @@ export class Particle extends EventEmitter {
                 this.vx *= -1;
                 this.x += e.adj;
             }
-            if (e.direction === 'vertical') {
+            else if (e.direction === 'vertical') {
                 this.vy *= -1;
                 this.y += e.adj;
             }
@@ -23,9 +23,9 @@ export class Particle extends EventEmitter {
         this.id = id;
         this.position = position;
         this.velocity = randomAngleVtr().mult(speed);
-        this.color = new Color();
-        this.lineColor = new Color();
         this.radius = radius;
+        this.mass = 4 / 3 * pi * this.radius ** 3;
+        this.color = new Color();
         this.on('boundsCollide', this.handleBoundCollision);
         this.on('collision', this.handleCollision);
     }
@@ -35,7 +35,6 @@ export class Particle extends EventEmitter {
     get vy() { return this.velocity.y; }
     get speed() { return this.velocity.norm; }
     get direction() { return Math.acos(this.vx / this.speed); }
-    get mass() { return 4 / 3 * pi * this.radius ** 3; }
     set x(posX) { this.position.x = posX; }
     set y(posY) { this.position.y = posY; }
     set vx(velX) { this.velocity.x = velX; }

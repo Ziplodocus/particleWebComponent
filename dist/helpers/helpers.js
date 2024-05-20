@@ -1,11 +1,10 @@
 import { Vector2d } from "../utility-classes/Vector2d.js";
-const pi = Math.PI;
-const randomAngle = () => 2 * pi * Math.random();
-const randomAngleVtr = () => {
+export const pi = Math.PI;
+export const randomAngle = () => 2 * pi * Math.random();
+export const randomAngleVtr = () => {
     const directionRadeons = randomAngle();
     return new Vector2d(Math.cos(directionRadeons), Math.sin(directionRadeons));
 };
-export { randomAngle, pi, randomAngleVtr };
 export const ts = (name) => {
     total[name] = 0;
 };

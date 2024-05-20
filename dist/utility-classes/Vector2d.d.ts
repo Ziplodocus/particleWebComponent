@@ -1,7 +1,10 @@
 export declare class Vector2d {
-    x: number;
-    y: number;
+    vec: [number, number];
     constructor(x?: number, y?: number);
+    get x(): number;
+    get y(): number;
+    set x(x: number);
+    set y(y: number);
     get norm(): number;
     copy(): Vector2d;
     set(x: number, y: number): void;

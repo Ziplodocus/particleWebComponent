@@ -1,41 +1,59 @@
-import { ParticleManager } from './ParticleManager.js';
+import { ParticleManager, ParticleManagerOptions } from './ParticleManager.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 import { ZEvent } from '../utility-classes/EventEmitter.js';
 import { Particle } from './Particle.js';
-declare type ParticleCanvasOptions = {
+type ParticleCanvasOptions = {
     fillOpacity: number;
     edgeOpacity: number;
     mouseEdges: boolean;
     fill: boolean;
     fillColor: string;
     outline: boolean;
-    outlineColor: string;
     edges: boolean;
     pixelDensity: number;
 };
-export declare class ParticleCanvas extends HTMLCanvasElement {
+declare const defaultOptions: {
+    readonly 'fill-opacity': 0.5;
+    readonly 'edge-opacity': 1;
+    readonly 'mouse-edges': true;
+    readonly fill: true;
+    readonly 'fill-color': "";
+    readonly outline: false;
+    readonly edges: true;
+    readonly 'pixel-density': 1;
+    readonly 'min-speed': 0.1;
+    readonly 'max-speed': 0.3;
+    readonly 'min-radius': 1;
+    readonly 'max-radius': 7;
+    readonly 'initial-number': 15;
+    readonly vicinity: 75;
+};
+export declare class ParticleCanvas extends HTMLElement {
+    static observedAttributes: readonly ["fill-opacity", "edge-opacity", "mouse-edges", "fill", "fill-color", "outline", "edges", "pixel-density", "min-speed", "max-speed", "min-radius", "max-radius", "initial-number", "vicinity"];
+    canvas: HTMLCanvasElement;
     options: ParticleCanvasOptions;
-    width: number;
-    height: number;
+    managerOptions: ParticleManagerOptions;
     ctx: CanvasRenderingContext2D;
-    particleManager: ParticleManager;
+    manager: ParticleManager;
     mousePosition: Vector2d;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
     constructor();
+    attributeChangedCallback(name: string, prev: string, next: string): void;
+    setting(key: keyof typeof defaultOptions): string;
     get area(): number;
     renderLoop: () => void;
-    loopBody(): void;
-    createResizeHandler(): (entries: ResizeObserverEntry[]) => void;
+    render(): void;
+    refresh(): void;
     hoverHandler: (e: MouseEvent) => void;
     mouseClickHandler: (e: MouseEvent) => void;
-    mouseEnterHandler: () => void;
+    mouseEnterHandler: (e: any) => void;
     mouseLeaveHandler: () => void;
     inVicinityHandler: (e: ZEvent) => void;
-    refresh(): void;
-    resize: () => void;
+    resize(): void;
     setUpParticleRendering(): void;
     renderParticle(p: Particle): void;
     renderEdge(p: Particle, q: Particle): void;
     renderMouseEdges(): void;
-    computedStyle(prop: string): string;
 }
 export {};

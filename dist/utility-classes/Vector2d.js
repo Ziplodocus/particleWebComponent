@@ -1,7 +1,18 @@
 export class Vector2d {
     constructor(x = 0, y = 0) {
-        this.x = x;
-        this.y = y;
+        this.vec = [x, y];
+    }
+    get x() {
+        return this.vec[0];
+    }
+    get y() {
+        return this.vec[1];
+    }
+    set x(x) {
+        this.vec[0] = x;
+    }
+    set y(y) {
+        this.vec[1] = y;
     }
     get norm() {
         return (this.x ** 2 + this.y ** 2) ** 0.5;

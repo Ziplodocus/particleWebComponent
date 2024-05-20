@@ -1,5 +1,5 @@
 import { ParticleManager, ParticleManagerOptions } from './ParticleManager.js';
-import { pi, tc, ts } from '../helpers/helpers.js';
+import { pi, t, tc, ts } from '../helpers/helpers.js';
 import { Color } from '../utility-classes/Color.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 import { ZEvent } from '../utility-classes/EventEmitter.js';
@@ -12,158 +12,289 @@ type ParticleCanvasOptions = {
 	fill: boolean,
 	fillColor: string,
 	outline: boolean,
-	outlineColor: string,
 	edges: boolean,
 	pixelDensity: number;
 };
-const defaultCanvasOptions: ParticleCanvasOptions = {
-	fillOpacity: 0.5,
-	edgeOpacity: 1,
-	mouseEdges: true,
-	fill: true,
-	fillColor: undefined,
-	outline: false,
-	outlineColor: undefined,
-	edges: true,
-	pixelDensity: 1
-};
+
+const defaultOptions = {
+	'fill-opacity': 0.5,
+	'edge-opacity': 1,
+	'mouse-edges': true,
+	'fill': true,
+	'fill-color': '',
+	'outline': false,
+	'edges': true,
+	'pixel-density': 1,
+	'min-speed': 0.1,
+	'max-speed': 0.3,
+	'min-radius': 1,
+	'max-radius': 7,
+	'initial-number': 15,
+	'vicinity': 75
+} as const;
 
 //Getting the size of the this and assigning it to an object
-export class ParticleCanvas extends HTMLCanvasElement {
+export class ParticleCanvas extends HTMLElement {
+	static observedAttributes = [
+		'fill-opacity',
+		'edge-opacity',
+		'mouse-edges',
+		'fill',
+		'fill-color',
+		'outline',
+		'edges',
+		'pixel-density',
+		'min-speed',
+		'max-speed',
+		'min-radius',
+		'max-radius',
+		'initial-number',
+		'vicinity'
+	] as const;
+
+	canvas: HTMLCanvasElement;
 	options: ParticleCanvasOptions;
-	width: number;
-	height: number;
+	managerOptions: ParticleManagerOptions;
 	ctx: CanvasRenderingContext2D;
-	particleManager: ParticleManager;
+	manager: ParticleManager;
 	mousePosition: Vector2d;
-	constructor() {
-		super();
-		const canvasOptions: ParticleCanvasOptions = JSON.parse(this.getAttribute('data-canvas-options'));
-		const particleOptions: ParticleManagerOptions = JSON.parse(this.getAttribute('data-particle-options'));
-		this.options = { ...defaultCanvasOptions, ...canvasOptions };
-		this.width = this.scrollWidth * this.options.pixelDensity;
-		this.height = this.scrollHeight * this.options.pixelDensity;
-		this.ctx = this.getContext('2d');
-		this.particleManager = new ParticleManager(particleOptions, this.width, this.height);
+
+	connectedCallback() {
+		this.refresh();
+		this.ctx = this.canvas.getContext('2d');
+		this.manager = new ParticleManager(this.managerOptions, this.canvas.width, this.canvas.height);
 		this.mousePosition = new Vector2d();
 
-		const sizeWatcher = new ResizeObserver(this.createResizeHandler());
+		const sizeWatcher = new ResizeObserver(() => requestAnimationFrame(this.resize.bind(this)));
 		sizeWatcher.observe(this);
 
-		// this.addEventListener('optionChange', this.handleOptionChange)
-		this.addEventListener('mouseenter', this.mouseEnterHandler);
-		this.addEventListener('mousemove', this.hoverHandler, { passive: true });
-		this.addEventListener('mouseleave', this.mouseLeaveHandler);
-		this.addEventListener('click', this.mouseClickHandler);
-		this.particleManager.on('inVicinity', this.inVicinityHandler);
+		this.canvas.addEventListener('mouseenter', this.mouseEnterHandler);
+		this.canvas.addEventListener('mousemove', this.hoverHandler, { passive: true });
+		this.canvas.addEventListener('mouseleave', this.mouseLeaveHandler);
+		this.canvas.addEventListener('click', this.mouseClickHandler);
+
+		this.manager.on('inVicinity', this.inVicinityHandler);
 
 		this.renderLoop();
-	}
-	get area() {
-		return this.width * this.height;
-	}
-	renderLoop = () => {
-		this.loopBody();
-		requestAnimationFrame(this.renderLoop);
-	};
-	loopBody() {
-		this.setUpParticleRendering();
-		this.particleManager.trigger('incrementTime');
 
-		this.particleManager.particles.forEach(p => {
+	}
+
+	disconnectedCallback() {
+
+	}
+
+	constructor() {
+		super();
+
+		this.options = {
+			fill: this.setting('fill') === 'true',
+			fillColor: this.setting('fill-color'),
+			fillOpacity: Number(this.setting('fill-opacity')),
+			outline: this.setting('outline') === 'true',
+			edges: this.setting('edges') === 'true',
+			edgeOpacity: Number(this.setting('edge-opacity')),
+			mouseEdges: this.setting('mouse-edges') === 'true',
+			pixelDensity: Number(this.setting('pixel-density')),
+		};
+
+		this.managerOptions = {
+			minSpeed: Number(this.setting('min-speed')),
+			maxSpeed: Number(this.setting('max-speed')),
+			minRadius: Number(this.setting('min-radius')),
+			maxRadius: Number(this.setting('max-radius')),
+			initialNumber: Number(this.setting('initial-number')),
+			vicinity: Number(this.setting('vicinity')),
+		};
+
+		const shadow = this.attachShadow({ mode: 'closed' });
+
+		this.canvas = document.createElement('canvas');
+		this.canvas.style.setProperty('display', 'block');
+		this.canvas.style.setProperty('width', '100%');
+		this.canvas.style.setProperty('height', '100%');
+
+		shadow.appendChild(this.canvas);
+	}
+
+	attributeChangedCallback(name: string, prev: string, next: string) {
+		if (next === null) return;
+		switch (name) {
+			case 'fill':
+				this.options.fill = next === 'true';
+				break;
+			case 'fill-color':
+				this.options.fillColor = next;
+				break;
+			case 'fill-opacity':
+				this.options.fillOpacity = Number(next);
+				break;
+			case 'outline':
+				this.options.outline = next === 'true';
+				break;
+			case 'edges':
+				this.options.edges = next === 'true';
+				break;
+			case 'edge-opacity':
+				this.options.edgeOpacity = Number(next);
+				break;
+			case 'mouse-edges':
+				this.options.mouseEdges = next === 'true';
+				break;
+			case 'pixel-density':
+				this.options.pixelDensity = Number(next);
+				this.resize();
+				break;
+			case 'min-speed':
+				this.manager.options.minSpeed = Number(next);
+				break;
+			case 'max-speed':
+				this.manager.options.maxSpeed = Number(next);
+				break;
+			case 'min-radius':
+				this.manager.options.minRadius = Number(next);
+				break;
+			case 'max-radius':
+				this.manager.options.maxRadius = Number(next);
+				break;
+			case 'initial-number':
+				this.manager.options.initialNumber = Number(next);
+				break;
+			case 'vicinity':
+				this.manager.options.vicinity = Number(next);
+				break;
+		}
+	}
+
+	setting(key: keyof typeof defaultOptions): string {
+		const attr = this.getAttribute(key);
+		return attr !== null ? attr : defaultOptions[key].toString();
+	}
+
+	get area() {
+		return this.canvas.width * this.canvas.height;
+	}
+
+	renderLoop = () => {
+		this.render();
+		const callback = this.renderLoop;
+		requestAnimationFrame(callback);
+	};
+
+	render() {
+		this.setUpParticleRendering();
+		this.manager.trigger('incrementTime');
+
+		this.manager.particles.forEach(p => {
 			this.renderParticle(p);
 		});
 		if (this.mousePosition["active"] && this.options.mouseEdges) this.renderMouseEdges();
 	}
-	createResizeHandler() {
-		let resizeId: number;
-		return (entries: ResizeObserverEntry[]) => {
-			entries.forEach(entry => {
-				if (this !== entry.target) return;
-				clearTimeout(resizeId);
-				resizeId = setTimeout(this.resize, 200);
-			});
-		};
+
+
+	refresh() {
+		this.canvas.width = this.canvas.scrollWidth * this.options.pixelDensity;
+		this.canvas.height = this.canvas.scrollHeight * this.options.pixelDensity;
+
+		if (this.manager) {
+			this.manager.bounds[0] = this.canvas.width;
+			this.manager.bounds[1] = this.canvas.height;
+		}
 	}
+
 	hoverHandler = (e: MouseEvent) => {
 		requestAnimationFrame(() => {
-			const mod = this.options.pixelDensity;
-			this.mousePosition.set(e.offsetX * mod, e.offsetY * mod);
+			this.mousePosition.set(
+				// @ts-ignore
+				e.layerX * this.options.pixelDensity,
+				// @ts-ignore
+				e.layerY * this.options.pixelDensity
+			);
 		});
 	};
+
 	mouseClickHandler = (e: MouseEvent) => {
-		this.particleManager.add(this.mousePosition.copy());
+		this.manager.add(this.mousePosition.copy());
 	};
-	mouseEnterHandler = () => {
+
+	mouseEnterHandler = (e) => {
+		this.mousePosition.set(
+			e.layerX * this.options.pixelDensity,
+			e.layerY * this.options.pixelDensity
+		);
 		this.mousePosition["active"] = true;
 	};
+
 	mouseLeaveHandler = () => {
+		this.mousePosition.set(0, 0);
 		this.mousePosition["active"] = false;
 	};
+
 	inVicinityHandler = (e: ZEvent) => {
 		if (this.options.edges) this.renderEdge(e.p, e.q);
 	};
-	refresh() {
-		this.width = this.scrollWidth * this.options.pixelDensity;
-		this.height = this.scrollHeight * this.options.pixelDensity;
-	}
-	resize = () => {
-		const oldCanvasSize = { width: this.width, height: this.height, area: this.area };
+
+	resize() {
+		const oldCanvasSize: [width: number, height: number, area: number] =
+			[this.canvas.width, this.canvas.height, this.area];
+
 		this.refresh();
+		if (!this?.manager) return;
 
-		const sizeRatio = this.area / oldCanvasSize.area;
-		this.particleManager.options.vicinity *= sizeRatio ** 0.5;
+		const sizeRatio = this.area / oldCanvasSize[2];
 
-		this.particleManager.particles.forEach(p => {
+		this.manager.options.vicinity *= sizeRatio ** 0.5;
+
+		this.manager.particles.forEach(p => {
 			p.position.set(
-				p.x * (this.width / oldCanvasSize.width),
-				p.y * (this.height / oldCanvasSize.height)
+				p.x * (this.canvas.width / oldCanvasSize[0]),
+				p.y * (this.canvas.height / oldCanvasSize[1])
 			);
 		});
-		this.particleManager.bounds.x = this.width;
-		this.particleManager.bounds.y = this.height;
 	};
+
+
 	setUpParticleRendering() {
-		this.ctx.clearRect(0, 0, this.width, this.height);
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.ctx.lineCap = 'round';
 	}
+
+
 	renderParticle(p: Particle) {
 		const ctx = this.ctx;
-		const opn = this.options;
-		ctx.globalAlpha = opn.fillOpacity;
-		if (opn.fill || opn.outline) {
+
+		ctx.globalAlpha = this.options.fillOpacity;
+
+		if (this.options.fill || this.options.outline) {
 			ctx.beginPath();
 			ctx.arc(p.x, p.y, p.radius, 0, 2 * pi);
 		}
-		if (opn.fill) {
-			ctx.fillStyle = opn.fillColor ?? p.color.rgba;
+
+		if (this.options.fill) {
+			ctx.fillStyle = this.options.fillColor || p.color.rgba;
 			ctx.fill();
 		}
-		if (opn.outline) {
-			ctx.strokeStyle = opn.outlineColor ?? p.lineColor.rgba;
+
+		if (this.options.outline) {
+			ctx.strokeStyle = this.options.fillColor || p.color.rgba;
 			ctx.lineWidth = p.radius / 3;
 			ctx.stroke();
 		}
+
 		ctx.globalAlpha = 1;
 	}
+
+
 	//Draws edges between particles within a vicinity, and also to the tracked mouse position
 	renderEdge(p: Particle, q: Particle) {
 		const ctx = this.ctx;
-		const opn = this.options;
 		const diff = p.position.minus(q.position);
 		const distance = diff.norm;
 		const radii = p.radius + q.radius;
-		const alpha = opn.edgeOpacity - ((distance - radii) / ((this.particleManager.options.vicinity - radii) / opn.edgeOpacity));
-		switch (true) {
-			case (opn.outlineColor !== undefined):
-				ctx.strokeStyle = opn.outlineColor;
-				break;
-			case (opn.outline):
-				ctx.strokeStyle = Color.avgColors([p.lineColor, q.lineColor]).rgba;
-				break;
-			default:
-				ctx.strokeStyle = Color.avgColors([p.color, q.color]).rgba;
-		}
+		const alpha = this.options.edgeOpacity - (
+			(distance - radii) / ((this.manager.options.vicinity - radii) / this.options.edgeOpacity)
+		);
+
+		ctx.strokeStyle = Color.avgColors([p.color, q.color]).rgba;
 		ctx.globalAlpha = alpha;
 		ctx.lineWidth = radii / 5;
 		ctx.beginPath();
@@ -172,25 +303,17 @@ export class ParticleCanvas extends HTMLCanvasElement {
 		ctx.stroke();
 		ctx.globalAlpha = 1;
 	}
+
 	renderMouseEdges() {
-		this.particleManager.particles.forEach(p => {
+		this.manager.particles.forEach(p => {
 			const distance = p.position.minus(this.mousePosition).norm;
-			if (distance > this.particleManager.options.vicinity * 1.5) return;
-			const alpha = this.options.edgeOpacity - (distance / ((this.particleManager.options.vicinity * 1.5) / this.options.edgeOpacity));
+			const opacity = this.options.edgeOpacity;
+
+			if (distance > this.manager.options.vicinity * 1.5) return;
+			const alpha = opacity - (distance / ((this.manager.options.vicinity * 1.5) / opacity));
 			const ctx = this.ctx;
-			switch (true) {
-				case (this.options.outlineColor !== undefined):
-					ctx.strokeStyle = this.options.outlineColor;
-					break;
-				case (this.options.outline):
-					ctx.strokeStyle = p.lineColor.rgba;
-					break;
-				case (this.options.fillColor !== undefined):
-					ctx.strokeStyle = this.options.fillColor;
-					break;
-				default:
-					ctx.strokeStyle = p.color.rgba;
-			}
+
+			ctx.strokeStyle = this.options.fillColor || p.color.rgba;
 			ctx.globalAlpha = alpha;
 			ctx.lineWidth = p.radius * 0.8;
 			ctx.beginPath();
@@ -200,9 +323,4 @@ export class ParticleCanvas extends HTMLCanvasElement {
 			ctx.globalAlpha = 1;
 		});
 	}
-	computedStyle(prop: string) {
-		return getComputedStyle(this).getPropertyValue(prop);
-	}
 }
-
-window.customElements.define('particle-canvas', ParticleCanvas, { extends: 'canvas' });

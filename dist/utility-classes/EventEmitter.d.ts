@@ -1,4 +1,4 @@
-export declare type ZEvent = {
+export type ZEvent = {
     [data: string]: any;
 };
 export declare class EventEmitter {
