@@ -3,7 +3,7 @@ import { EventEmitter, ZEvent } from '../utility-classes/EventEmitter.js';
 import { Vector2d } from '../utility-classes/Vector2d.js';
 export declare class Particle extends EventEmitter {
     id: number;
-    box?: Vector2d;
+    cellCoords?: Vector2d;
     position: Vector2d;
     velocity: Vector2d;
     color: Color;

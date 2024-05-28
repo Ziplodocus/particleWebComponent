@@ -5,7 +5,7 @@ import { Vector2d } from '../utility-classes/Vector2d.js';
 
 export class Particle extends EventEmitter {
 	id: number;
-	box?: Vector2d;
+	cellCoords?: Vector2d;
 	position: Vector2d;
 	velocity: Vector2d;
 	color: Color;

@@ -10,7 +10,7 @@ body {
 }
 
 particle-canvas {
-    aspect-ratio: 2;
+    aspect-ratio: 3;
     position: relative;
     border: 3px solid gainsboro
 }

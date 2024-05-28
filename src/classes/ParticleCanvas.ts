@@ -62,7 +62,10 @@ export class ParticleCanvas extends HTMLElement {
 	connectedCallback() {
 		this.refresh();
 		this.ctx = this.canvas.getContext('2d');
-		this.manager = new ParticleManager(this.managerOptions, this.canvas.width, this.canvas.height);
+		this.manager = new ParticleManager(
+			this.managerOptions,
+			new Vector2d(this.canvas.width, this.canvas.height)
+		);
 		this.mousePosition = new Vector2d();
 
 		const sizeWatcher = new ResizeObserver(() => requestAnimationFrame(this.resize.bind(this)));
@@ -76,7 +79,6 @@ export class ParticleCanvas extends HTMLElement {
 		this.manager.on('inVicinity', this.inVicinityHandler);
 
 		this.renderLoop();
-
 	}
 
 	disconnectedCallback() {
@@ -118,6 +120,7 @@ export class ParticleCanvas extends HTMLElement {
 
 	attributeChangedCallback(name: string, prev: string, next: string) {
 		if (next === null) return;
+		if (!this?.manager) return;
 		switch (name) {
 			case 'fill':
 				this.options.fill = next === 'true';
@@ -161,6 +164,7 @@ export class ParticleCanvas extends HTMLElement {
 				break;
 			case 'vicinity':
 				this.manager.options.vicinity = Number(next);
+				this.resize();
 				break;
 		}
 	}
@@ -176,29 +180,23 @@ export class ParticleCanvas extends HTMLElement {
 
 	renderLoop = () => {
 		this.render();
-		const callback = this.renderLoop;
-		requestAnimationFrame(callback);
+		requestAnimationFrame(this.renderLoop);
 	};
 
 	render() {
 		this.setUpParticleRendering();
 		this.manager.trigger('incrementTime');
-
 		this.manager.particles.forEach(p => {
 			this.renderParticle(p);
 		});
-		if (this.mousePosition["active"] && this.options.mouseEdges) this.renderMouseEdges();
+		if (this.mousePosition["active"] && this.options.mouseEdges)
+			this.renderMouseEdges();
 	}
 
 
 	refresh() {
 		this.canvas.width = this.canvas.scrollWidth * this.options.pixelDensity;
 		this.canvas.height = this.canvas.scrollHeight * this.options.pixelDensity;
-
-		if (this.manager) {
-			this.manager.bounds[0] = this.canvas.width;
-			this.manager.bounds[1] = this.canvas.height;
-		}
 	}
 
 	hoverHandler = (e: MouseEvent) => {
@@ -250,6 +248,9 @@ export class ParticleCanvas extends HTMLElement {
 				p.y * (this.canvas.height / oldCanvasSize[1])
 			);
 		});
+
+		this.manager.setBounds(new Vector2d(this.canvas.width, this.canvas.height));
+		this.manager.setGrid();
 	};
 
 
@@ -284,7 +285,7 @@ export class ParticleCanvas extends HTMLElement {
 	}
 
 
-	//Draws edges between particles within a vicinity, and also to the tracked mouse position
+	//Draws edges between particles within a vicinity
 	renderEdge(p: Particle, q: Particle) {
 		const ctx = this.ctx;
 		const diff = p.position.minus(q.position);
@@ -299,7 +300,12 @@ export class ParticleCanvas extends HTMLElement {
 		ctx.lineWidth = radii / 5;
 		ctx.beginPath();
 		ctx.moveTo(p.x, p.y);
-		ctx.lineTo(q.x, q.y);
+		/**
+		 * @todo A little hack to get the lines to follow to q particle in the center
+		 * The inVicinity is triggered before the q particle is moved, so we're just going to estimate where it's going to be.
+		 * There's obviously a bit of error if the q particle actually collides in this frame but 🤷
+		 * */
+		ctx.lineTo(q.x + q.vx, q.y + q.vy);
 		ctx.stroke();
 		ctx.globalAlpha = 1;
 	}
@@ -313,10 +319,10 @@ export class ParticleCanvas extends HTMLElement {
 			const alpha = opacity - (distance / ((this.manager.options.vicinity * 1.5) / opacity));
 			const ctx = this.ctx;
 
+			ctx.beginPath();
 			ctx.strokeStyle = this.options.fillColor || p.color.rgba;
 			ctx.globalAlpha = alpha;
 			ctx.lineWidth = p.radius * 0.8;
-			ctx.beginPath();
 			ctx.moveTo(p.x, p.y);
 			ctx.lineTo(this.mousePosition.x, this.mousePosition.y);
 			ctx.stroke();
