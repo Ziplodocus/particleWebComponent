@@ -2,12 +2,13 @@
   "name": "particle-web-component",
   "version": "1.0.3",
   "description": "A flexible and customizable web component displaying simulated particles floating around",
-  "main": "./dist/classes/ParticleCanvas",
-  "types": "./dist/classes/ParticleCanvas",
+  "main": "./dist/app.js",
+  "types": "./dist/app.d.ts",
   "type": "module",
-  "module": "./dist/classes/ParticleCanvas",
+  "module": "./dist/app.js",
   "scripts": {
     "dev": "tsc --watch",
+    "build": "tsc",
     "test": "console.log(undefined)"
   },
   "repository": {

@@ -102,10 +102,10 @@ export class ParticleCanvas extends HTMLElement {
 		this.managerOptions = {
 			minSpeed: Number(this.setting('min-speed')),
 			maxSpeed: Number(this.setting('max-speed')),
-			minRadius: Number(this.setting('min-radius')),
-			maxRadius: Number(this.setting('max-radius')),
-			initialNumber: Number(this.setting('initial-number')),
-			vicinity: Number(this.setting('vicinity')),
+			minRadius: parseInt(this.setting('min-radius')),
+			maxRadius: parseInt(this.setting('max-radius')),
+			initialNumber: parseInt(this.setting('initial-number')),
+			vicinity: parseInt(this.setting('vicinity')),
 		};
 
 		const shadow = this.attachShadow({ mode: 'closed' });
@@ -154,17 +154,20 @@ export class ParticleCanvas extends HTMLElement {
 				this.manager.options.maxSpeed = Number(next);
 				break;
 			case 'min-radius':
-				this.manager.options.minRadius = Number(next);
+				this.manager.options.minRadius = parseInt(next);
 				break;
 			case 'max-radius':
-				this.manager.options.maxRadius = Number(next);
+				this.manager.options.maxRadius = parseInt(next);
 				break;
 			case 'initial-number':
-				this.manager.options.initialNumber = Number(next);
+				this.manager.options.initialNumber = parseInt(next);
 				break;
 			case 'vicinity':
-				this.manager.options.vicinity = Number(next);
+				this.manager.options.vicinity = parseInt(next);
+				this.manager.setCellSize();
 				this.resize();
+				break;
+			default:
 				break;
 		}
 	}
