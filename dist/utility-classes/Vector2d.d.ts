@@ -1,6 +1,6 @@
 export declare class Vector2d {
     vec: [number, number];
-    constructor(x?: number, y?: number);
+    constructor(vec: [number, number]);
     get x(): number;
     get y(): number;
     set x(x: number);

@@ -6,10 +6,10 @@ export const randomAngle = (): number => 2 * pi * Math.random();
 
 export const randomAngleVtr = (): Vector2d => {
   const directionRadeons = randomAngle();
-  return new Vector2d(
+  return new Vector2d([
     Math.cos(directionRadeons),
     Math.sin(directionRadeons)
-  );
+  ]);
 };
 
 

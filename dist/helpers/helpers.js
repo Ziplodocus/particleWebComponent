@@ -3,7 +3,10 @@ export const pi = Math.PI;
 export const randomAngle = () => 2 * pi * Math.random();
 export const randomAngleVtr = () => {
     const directionRadeons = randomAngle();
-    return new Vector2d(Math.cos(directionRadeons), Math.sin(directionRadeons));
+    return new Vector2d([
+        Math.cos(directionRadeons),
+        Math.sin(directionRadeons)
+    ]);
 };
 export const ts = (name) => {
     total[name] = 0;

@@ -16,9 +16,10 @@ export declare class ParticleManager extends EventEmitter {
     grid: (Set<Particle> | undefined)[][];
     cellSize: number;
     checked: Set<number>;
-    nearParticles: Set<Particle>;
     constructor(options: ParticleManagerOptions, bounds: Vector2d);
     incrementTime(): void;
+    initialiseParticles(): void;
+    clearParticles(): void;
     checkForBoundsCollision(p: Particle): void;
     checkParticleVicinity(p: Particle): void;
     /**

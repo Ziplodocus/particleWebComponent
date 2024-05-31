@@ -1,6 +1,6 @@
 export class Vector2d {
-    constructor(x = 0, y = 0) {
-        this.vec = [x, y];
+    constructor(vec) {
+        this.vec = vec;
     }
     get x() {
         return this.vec[0];
@@ -18,7 +18,7 @@ export class Vector2d {
         return (this.x ** 2 + this.y ** 2) ** 0.5;
     }
     copy() {
-        return new Vector2d(this.x, this.y);
+        return new Vector2d([this.vec[0], this.vec[1]]);
     }
     set(x, y) {
         this.x = x;
@@ -33,16 +33,16 @@ export class Vector2d {
         this.y += vtr.y;
     }
     perp() {
-        return new Vector2d(-this.y, this.x);
+        return new Vector2d([-this.y, this.x]);
     }
     mult(scalar) {
-        return new Vector2d(this.x * scalar, this.y * scalar);
+        return new Vector2d([this.x * scalar, this.y * scalar]);
     }
     dot(a) {
         return this.x * a.x + this.y * a.y;
     }
     add(vtr) {
-        return new Vector2d(this.x + vtr.x, this.y + vtr.y);
+        return new Vector2d([this.x + vtr.x, this.y + vtr.y]);
     }
     minus(vtr) {
         return this.add(vtr.mult(-1));

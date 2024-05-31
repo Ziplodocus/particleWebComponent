@@ -64,9 +64,9 @@ export class ParticleCanvas extends HTMLElement {
 		this.ctx = this.canvas.getContext('2d');
 		this.manager = new ParticleManager(
 			this.managerOptions,
-			new Vector2d(this.canvas.width, this.canvas.height)
+			new Vector2d([this.canvas.width, this.canvas.height])
 		);
-		this.mousePosition = new Vector2d();
+		this.mousePosition = new Vector2d([0, 0]);
 
 		const sizeWatcher = new ResizeObserver(() => requestAnimationFrame(this.resize.bind(this)));
 		sizeWatcher.observe(this);
@@ -121,6 +121,7 @@ export class ParticleCanvas extends HTMLElement {
 	attributeChangedCallback(name: string, prev: string, next: string) {
 		if (next === null) return;
 		if (!this?.manager) return;
+		let val;
 		switch (name) {
 			case 'fill':
 				this.options.fill = next === 'true';
@@ -148,22 +149,26 @@ export class ParticleCanvas extends HTMLElement {
 				this.resize();
 				break;
 			case 'min-speed':
-				this.manager.options.minSpeed = Number(next);
+				val = Number(next);
+				this.manager.options.minSpeed = isNaN(val) ? 0 : Math.max(val, 0);
 				break;
 			case 'max-speed':
-				this.manager.options.maxSpeed = Number(next);
+				val = Number(next);
+				this.manager.options.maxSpeed = isNaN(val) ? 0 : Math.max(val, 0);
 				break;
 			case 'min-radius':
-				this.manager.options.minRadius = parseInt(next);
+				this.manager.options.minRadius = parsePositiveInteger(next);
 				break;
 			case 'max-radius':
-				this.manager.options.maxRadius = parseInt(next);
+				this.manager.options.minRadius = parsePositiveInteger(next);
 				break;
 			case 'initial-number':
-				this.manager.options.initialNumber = parseInt(next);
+				this.manager.options.initialNumber = parsePositiveInteger(next);
+				this.manager.clearParticles();
+				this.manager.initialiseParticles();
 				break;
 			case 'vicinity':
-				this.manager.options.vicinity = parseInt(next);
+				this.manager.options.vicinity = parsePositiveInteger(next);
 				this.manager.setCellSize();
 				this.resize();
 				break;
@@ -183,7 +188,9 @@ export class ParticleCanvas extends HTMLElement {
 
 	renderLoop = () => {
 		this.render();
-		requestAnimationFrame(this.renderLoop);
+		const callback = this.renderLoop;
+
+		requestAnimationFrame(callback);
 	};
 
 	render() {
@@ -252,7 +259,7 @@ export class ParticleCanvas extends HTMLElement {
 			);
 		});
 
-		this.manager.setBounds(new Vector2d(this.canvas.width, this.canvas.height));
+		this.manager.setBounds(new Vector2d([this.canvas.width, this.canvas.height]));
 		this.manager.setGrid();
 	};
 
@@ -260,6 +267,10 @@ export class ParticleCanvas extends HTMLElement {
 	setUpParticleRendering() {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		this.ctx.lineCap = 'round';
+
+		if (this.options.fillColor) {
+			this.ctx.strokeStyle = this.options.fillColor;
+		}
 	}
 
 
@@ -298,7 +309,9 @@ export class ParticleCanvas extends HTMLElement {
 			(distance - radii) / ((this.manager.options.vicinity - radii) / this.options.edgeOpacity)
 		);
 
-		ctx.strokeStyle = this.options.fillColor || Color.avgColors([p.color, q.color]).rgba;
+		if (!this.options.fillColor) {
+			ctx.strokeStyle = Color.avgColors([p.color, q.color]).rgba;
+		}
 		ctx.globalAlpha = alpha;
 		ctx.lineWidth = radii / 5;
 		ctx.beginPath();
@@ -332,4 +345,9 @@ export class ParticleCanvas extends HTMLElement {
 			ctx.globalAlpha = 1;
 		});
 	}
+}
+
+function parsePositiveInteger(numberlike) {
+	let val = parseInt(numberlike);
+	return isNaN(val) ? 0 : Math.max(val, 0);
 }

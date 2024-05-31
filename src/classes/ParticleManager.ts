@@ -27,8 +27,6 @@ export class ParticleManager extends EventEmitter {
   grid: (Set<Particle> | undefined)[][];
   cellSize: number;
   checked: Set<number>;
-  nearParticles: Set<Particle>;
-
 
   constructor(options: ParticleManagerOptions, bounds: Vector2d) {
     super();
@@ -40,9 +38,7 @@ export class ParticleManager extends EventEmitter {
 
     this.checked = new Set();
 
-    for (let i = this.options.initialNumber; i > 0; i--) {
-      this.add();
-    }
+    this.initialiseParticles();
 
     this.on('incrementTime', this.incrementTime.bind(this));
   }
@@ -59,6 +55,17 @@ export class ParticleManager extends EventEmitter {
     this.checked.clear();
   };
 
+  initialiseParticles() {
+    this.particles.clear();
+    for (let i = this.options.initialNumber; i > 0; i--) {
+      this.add();
+    }
+  }
+
+  clearParticles() {
+    this.particles.clear();
+    this.grid.forEach(col => col.forEach(cell => cell.clear()));
+  }
 
   checkForBoundsCollision(p: Particle) {
     const isLeft = p.x - p.radius <= 0;
@@ -89,7 +96,7 @@ export class ParticleManager extends EventEmitter {
     */
     for (let x = coords.x - 1; x <= coords.x + 1; x++) {
       for (let y = coords.y - 1; y <= coords.y + 1; y++) {
-        const cell = this.getCell(new Vector2d(x, y));
+        const cell = this.getCell(new Vector2d([x, y]));
         if (!cell) continue;
         cell.forEach((q) => this.handleNearbyParticle(p, q));
       }
@@ -143,14 +150,14 @@ export class ParticleManager extends EventEmitter {
     const vqp = (p.mass * (upp - uqp) + p.mass * upp + q.mass * uqp) / totalMass;
 
     //Projecting the perp and tang velocities back onto cartesian coordinates
-    const xUnit = new Vector2d(1, 0);
-    const yUnit = new Vector2d(0, 1);
+    const xUnit = new Vector2d([1, 0]);
+    const yUnit = new Vector2d([0, 1]);
     const pvx = perpunit.mult(vpp).dot(xUnit) + tangunit.mult(upt).dot(xUnit);
     const pvy = perpunit.mult(vpp).dot(yUnit) + tangunit.mult(upt).dot(yUnit);
     const qvx = perpunit.mult(vqp).dot(xUnit) + tangunit.mult(uqt).dot(xUnit);
     const qvy = perpunit.mult(vqp).dot(yUnit) + tangunit.mult(uqt).dot(yUnit);
-    const pv = new Vector2d(pvx, pvy);
-    const qv = new Vector2d(qvx, qvy);
+    const pv = new Vector2d([pvx, pvy]);
+    const qv = new Vector2d([qvx, qvy]);
     //Setting the new velocities on the particles
     p.trigger('collision', { v: pv });
     q.trigger('collision', { v: qv });
@@ -170,7 +177,7 @@ export class ParticleManager extends EventEmitter {
   randomPosition() {
     const randX = Math.random() * (this.bounds.x - 2 * this.options.maxRadius) + this.options.maxRadius;
     const randY = Math.random() * (this.bounds.y - 2 * this.options.maxRadius) + this.options.maxRadius;
-    return new Vector2d(randX, randY);
+    return new Vector2d([randX, randY]);
   }
 
 
@@ -217,10 +224,11 @@ export class ParticleManager extends EventEmitter {
   }
 
   getParticleCoords(p: Particle): Vector2d {
-    return new Vector2d(
+    const vec: [number, number] = [
       Math.min(Math.max(0, Math.floor(p.x / this.cellSize)), this.grid.length - 1),
       Math.min(Math.max(0, Math.floor(p.y / this.cellSize)), this.grid[0].length - 1)
-    );
+    ];
+    return new Vector2d(vec);
   }
 
   getCell(coords: Vector2d): Set<Particle> | undefined {
@@ -244,7 +252,7 @@ export class ParticleManager extends EventEmitter {
    * setGrid should also be called after this function
    */
   setCellSize() {
-    this.cellSize = Math.ceil(Math.max(2 * this.options.minRadius, this.options.vicinity));
+    this.cellSize = Math.ceil(Math.max(2 * this.options.minRadius, this.options.vicinity, 40));
   }
 
   /**
